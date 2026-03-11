@@ -107,8 +107,9 @@
 <h2>L1: TEXT CLASSIFICATION</h2>
 
 <h3>NLP Challenges</h3>
-<p><b>Ambiguity:</b> syntactic ("I saw a man with a telescope") &amp; semantic (polysemy). <b>Situated understanding:</b> meaning depends on social/cultural context. <b>Data sparsity:</b> long tail of language, rare words, low-resource langs. <b>Bias:</b> models amplify biases from training data; lack common sense.</p>
-
+<p><b>Ambiguity:</b> syntactic ("I saw a man with a telescope") &amp; semantic (polysemy/background (education/real)). <b>Situated understanding:</b> meaning depends on social/cultural context. <b>Data sparsity:</b> long tail of language, rare words, low-resource langs. <b>Bias:</b> models amplify biases from training data; lack common sense.</p>
+<p><b>Penn Treebank:</b> parse trees are broken into grammar rules such as <b>S→NP VP, NP→DT NN, VP→Vt NP / VP PP, PP→IN NP</b>, which are used to estimate PCFG rule probabilities from annotated data.</p>
+<p><b>Example:</b> “<i>The man sleeps</i>” breaks as <b>S→NP VP</b>, <b>NP→DT NN</b> (“The man”), <b>VP→Vi</b> (“sleeps”); tree probability is the product of the rule probabilities.</p>
 <h3>History</h3>
 <p><b>1940s–50s:</b> Shannon's info theory, per-word log-likelihood, Shannon Game. <b>1950s–80s:</b> Chomsky, rule-based ("Colorless green ideas sleep furiously" — grammaticality ≠ probability). <b>1990s:</b> statistical NLP, Penn Treebank, PCFGs. <b>2010s+:</b> deep learning, large-scale neural models.</p>
 
