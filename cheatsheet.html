@@ -346,13 +346,26 @@ $$\mathcal{L}_r=-\mathbb{E}\left[\log \sigma\big(r_\theta([\bar{x};\bar{y}_w]) -
 <p><b>Bradley-Terry:</b> reward difference induces preference probability. <b>Intuition:</b> binary ranking loss raises winner score, lowers loser score. <b>Iterative:</b> e.g. Llama 2 used multiple rounds: train model/ranker -&gt; sample -&gt; annotate -&gt; retrain; more data + bigger models usually improve RM quality.</p>
 
 <h3>RLHF Pipeline</h3>
+<p><b>RL objective:</b> learn a policy $\pi_\theta$ that maximizes the <b>expected return</b>, i.e., the expected sum of rewards over a trajectory sampled from the policy.</p>
+<div class="f">$$\max_\theta \; \mathbb{E}_{\tau \sim p_\theta(\tau)}\left[\sum_{t=1}^{T} r(s_t,a_t)\right]$$</div>
+
+<p><b>REINFORCE algorithm:</b> 1) sample trajectories $\tau^1,\dots,\tau^N$ from $\pi_\theta$; 2) compute gradient estimate using total reward of each trajectory; 3) update policy by gradient ascent $\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$; 4) repeat until convergence.</p>
+<div class="f">$$\nabla_\theta J(\theta)\approx \sum_{i=1}^{N}\left(\sum_{t=1}^{T}\nabla_\theta \log \pi_\theta(a_t^i\mid s_t^i)\right)\left(\sum_{t=1}^{T} r(s_t^i,a_t^i)\right)$$</div>
 <p><b>Step 1 — Preference data:</b> for each prompt, generate two outputs; human picks preferred one → dataset of $(x, y_w, y_l)$ triplets. Pairwise comparison more reliable than absolute ratings.</p>
 <p><b>Step 2 — Reward model:</b> fit pairwise ranker $r_\theta$. <b>Step 3 — optimize policy:</b> either PPO (explicit RM + RL) or DPO (direct preference loss, no separate RM).</p>
+
+<p><b>PPO-based RLHF (4 models):</b> uses a <b>policy</b> to generate responses, a <b>reward model</b> to score them, a <b>value model</b> to estimate advantages, and a frozen <b>reference policy</b> to apply a KL penalty and keep the policy close to the SFT model.</p>
+<p><b>PPO steps:</b> 1) sample prompts and generate responses from the current policy; 2) score each response with the reward model and add KL penalty against the reference policy; 3) use the value model to compute advantages; 4) update the policy with the PPO objective and update the value model, then repeat.</p>
+<div class="f">$$\max_\theta \; \mathbb{E}\left[\frac{\pi_\theta(a\mid s)}{\pi_{\theta_{\mathrm{old}}}(a\mid s)}\hat{A}(s,a) - \beta\,\mathrm{KL}\!\left(\pi_{\mathrm{ref}}(\cdot\mid s),\pi_\theta(\cdot\mid s)\right)\right]$$</div>
 
 <h3>PPO</h3>
 <div class="f">$$\arg\max_\theta \; E_\pi\left[\frac{\pi_\theta(a\mid s)}{\pi_{\theta_{\text{old}}}(a\mid s)} \hat{A}(s,a) - \beta\, \mathrm{KL}[\pi_{\theta_{\text{old}}}(\cdot\mid s),\pi_\theta(\cdot\mid s)]\right]$$</div>
 <p><b>Advantage:</b> $A_\pi(s,a)=r(s,a)+V_\pi(T(s,a)) - V_\pi(s)$ = how much better action was than expected. <b>Critic:</b> learned value $V_\phi(s)$ estimates expected future reward, giving a baseline and lowering variance vs raw reward. <b>KL term:</b> keeps policy near previous/reference policy for stability - rubber band to SFT model.</p>
 <p><b>4 models in memory:</b> policy $\pi_\theta$, value network $V_\phi$, reward model $r$, reference policy $\pi_{\text{ref}}$ (frozen SFT copy). <b>On-policy:</b> must sample fresh completions from current policy each iteration. <b>Intuition:</b> PPO = REINFORCE + critic baseline + trust-region/KL control; more hyperparams/engineering, but more stable.</p>
+
+<p><b>DPO (2 models):</b> uses only a trainable <b>policy</b> and a frozen <b>reference policy</b>; it does <b>not</b> require a separate reward model or value model.</p>
+<p><b>DPO steps:</b> 1) collect preference pairs $(x,y_w,y_l)$ with winner and loser responses; 2) compute policy and reference log-probabilities for both responses; 3) optimize a preference loss that increases the winner’s relative probability and decreases the loser’s; 4) repeat over the dataset.</p>
+<div class="f">$$\mathcal{L}_{\mathrm{DPO}}(\theta)=-\log \sigma\!\left(\beta \log \frac{\pi_\theta(y_w\mid x)}{\pi_{\mathrm{ref}}(y_w\mid x)}-\beta \log \frac{\pi_\theta(y_l\mid x)}{\pi_{\mathrm{ref}}(y_l\mid x)}\right)$$</div>
 
 <h3>DPO (Direct Preference Optimization)</h3>
 <p><b>Motivation:</b> PPO/RLHF is heavy: reward model training, RL instability, 4 models in memory. Can preferences be learned directly? <b>Starting point:</b> same KL-constrained RL objective. <b>Key insight:</b> solve for optimal policy, plug into Bradley-Terry; partition function $Z(\bar{x})$ cancels.</p>
