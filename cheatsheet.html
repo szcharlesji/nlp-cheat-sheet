@@ -279,8 +279,7 @@ $$\text{head}_i = \text{Attn}(QW_i^Q, KW_i^K, VW_i^V)$$</div>
 <tr><td><b>Top-K</b></td><td>Sample from $K$ most probable tokens only</td><td>Balances quality and diversity</td></tr>
 <tr><td><b>Top-P (Nucleus)</b></td><td>Sample from smallest set with $\sum P \geq p$</td><td>Adaptive truncation; adjusts to distribution shape</td></tr>
 </table>
-<p><b>Temperature $T$:</b> $P'(x) \propto P(x)^{1/T}$. $T > 1$ → flatter (more random). $T &lt; 1$ → sharper (more deterministic). $T = 1$ → original distribution. $T \to 0$ → greedy. $T \to \infty$ → uniform.</p>
-<p><b>Top-K vs Top-P:</b> Top-K uses a fixed number of candidates; Top-P uses a variable set covering enough probability mass, so it adapts to sharp vs. flat distributions.</p>
+<p><b>Temperature $T$:</b> $P'(x) \propto P(x)^{1/T}$. $T > 1$ → flatter (more random). $T &lt; 1$ → sharper (more deterministic). $T = 1$ → original distribution. $T \to 0$ → greedy. $T \to \infty$ → uniform.<b>Top-K vs Top-P:</b> Top-K uses a fixed number of candidates; Top-P uses a variable set covering enough probability mass, so it adapts to sharp vs. flat distributions.</p>
 
 <h3>Degeneration</h3>
 <p>Beam search can yield repetitive, generic text because models are <b>locally normalized</b>: each next token can be likely while the full sequence is bad. Analogy: all-heads is the most likely coin-flip sequence, but atypical. Motivates sampling.</p>
@@ -347,7 +346,6 @@ $$\mathcal{L}_r=-\mathbb{E}\left[\log \sigma\big(r_\theta([\bar{x};\bar{y}_w]) -
 
 <h3>RLHF Pipeline</h3>
 <p><b>RL objective:</b> learn a policy $\pi_\theta$ that maximizes the <b>expected return</b>, i.e., the expected sum of rewards over a trajectory sampled from the policy.</p>
-<div class="f">$$\max_\theta \; \mathbb{E}_{\tau \sim p_\theta(\tau)}\left[\sum_{t=1}^{T} r(s_t,a_t)\right]$$</div>
 
 <p><b>REINFORCE algorithm:</b> 1) sample trajectories $\tau^1,\dots,\tau^N$ from $\pi_\theta$; 2) compute gradient estimate using total reward of each trajectory; 3) update policy by gradient ascent $\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$; 4) repeat until convergence.</p>
 <div class="f">$$\nabla_\theta J(\theta)\approx \sum_{i=1}^{N}\left(\sum_{t=1}^{T}\nabla_\theta \log \pi_\theta(a_t^i\mid s_t^i)\right)\left(\sum_{t=1}^{T} r(s_t^i,a_t^i)\right)$$</div>
@@ -365,10 +363,9 @@ $$\mathcal{L}_r=-\mathbb{E}\left[\log \sigma\big(r_\theta([\bar{x};\bar{y}_w]) -
 
 <p><b>DPO (2 models):</b> uses only a trainable <b>policy</b> and a frozen <b>reference policy</b>; it does <b>not</b> require a separate reward model or value model.</p>
 <p><b>DPO steps:</b> 1) collect preference pairs $(x,y_w,y_l)$ with winner and loser responses; 2) compute policy and reference log-probabilities for both responses; 3) optimize a preference loss that increases the winner’s relative probability and decreases the loser’s; 4) repeat over the dataset.</p>
-<div class="f">$$\mathcal{L}_{\mathrm{DPO}}(\theta)=-\log \sigma\!\left(\beta \log \frac{\pi_\theta(y_w\mid x)}{\pi_{\mathrm{ref}}(y_w\mid x)}-\beta \log \frac{\pi_\theta(y_l\mid x)}{\pi_{\mathrm{ref}}(y_l\mid x)}\right)$$</div>
 
 <h3>DPO (Direct Preference Optimization)</h3>
-<p><b>Motivation:</b> PPO/RLHF is heavy: reward model training, RL instability, 4 models in memory. Can preferences be learned directly? <b>Starting point:</b> same KL-constrained RL objective. <b>Key insight:</b> solve for optimal policy, plug into Bradley-Terry; partition function $Z(\bar{x})$ cancels.</p>
+<b>Motivation:</b> PPO/RLHF is heavy: reward model training, RL instability, 4 models in memory. Can preferences be learned directly? <b>Starting point:</b> same KL-constrained RL objective. <b>Key insight:</b> solve for optimal policy, plug into Bradley-Terry; partition function $Z(\bar{x})$ cancels.
 <div class="f">$$\mathcal{L}_{\text{DPO}}(\theta) = -E_{(\bar{x},\bar{y}_w,\bar{y}_l) \sim \mathcal{D}}\left[\log \sigma\left(\beta \log \frac{\pi_\theta(\bar{y}_w\mid\bar{x})}{\pi_{\text{ref}}(\bar{y}_w\mid\bar{x})} - \beta \log \frac{\pi_\theta(\bar{y}_l\mid\bar{x})}{\pi_{\text{ref}}(\bar{y}_l\mid\bar{x})}\right)\right]$$</div>
 <p><b>Implicit reward:</b> $\hat{r}(\bar{x},\bar{y}) = \beta \log \frac{\pi_\theta(\bar{y}\mid\bar{x})}{\pi_{\text{ref}}(\bar{y}\mid\bar{x})}$, so no separate reward model. <b>2 models only:</b> trainable policy $\pi_\theta$ + frozen reference $\pi_{\text{ref}}$. <b>Off-policy:</b> trains on fixed preference dataset, no fresh rollout loop.</p>
 <div class="f">$$\nabla \mathcal{L} = -\beta E\left[\underbrace{\sigma(\hat{r}_l - \hat{r}_w)}_{\text{higher when wrong}}\left(\underbrace{\nabla \log \pi_\theta(\bar{y}_w\mid\bar{x})}_{\uparrow \text{preferred}} - \underbrace{\nabla \log \pi_\theta(\bar{y}_l\mid\bar{x})}_{\downarrow \text{dispreferred}}\right)\right]$$</div>
