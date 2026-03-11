@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NLP Midterm Cheat Sheet — CS2590</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @page {
+    size: 297mm 210mm;
+    margin: 0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 297mm;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: 'Times New Roman', 'DejaVu Serif', Georgia, serif;
+    font-size: 6.2pt;
+    line-height: 1.15;
+    color: #000;
+    background: #fff;
+  }
+  .page {
+    width: 297mm;
+    height: 210mm;
+    padding: 2.5mm 3mm;
+    page-break-after: always;
+    page-break-inside: avoid;
+    overflow: visible;
+    position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+  .columns {
+    column-count: 4;
+    column-gap: 2.5mm;
+    column-rule: 0.4pt solid #bbb;
+    height: 100%;
+  }
+  h1 {
+    font-size: 8pt;
+    text-align: center;
+    margin-bottom: 1.5pt;
+    border-bottom: 1.2pt solid #000;
+    padding-bottom: 1pt;
+    letter-spacing: 0.3pt;
+  }
+  h2 {
+    font-size: 6.8pt;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 0.6pt 3pt;
+    margin: 1.5pt 0 0.8pt 0;
+    break-inside: avoid;
+    letter-spacing: 0.2pt;
+  }
+  h3 {
+    font-size: 6.3pt;
+    font-weight: bold;
+    border-bottom: 0.4pt solid #666;
+    margin: 1.2pt 0 0.4pt 0;
+    break-inside: avoid;
+    color: #111;
+  }
+  p { margin-bottom: 0.6pt; text-align: justify; hyphens: auto; }
+  ul, ol { padding-left: 7pt; margin-bottom: 0.4pt; }
+  li { margin-bottom: 0.1pt; }
+  .f {
+    font-size: 6.2pt;
+    background: #f3f3f3;
+    padding: 0.6pt 2pt;
+    margin: 0.4pt 0;
+    border-left: 1.2pt solid #444;
+    display: block;
+    break-inside: avoid;
+    overflow: hidden;
+  }
+  .f .katex { font-size: 6.8pt !important; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8pt 0;
+    font-size: 5.8pt;
+    break-inside: avoid;
+  }
+  th, td {
+    border: 0.4pt solid #999;
+    padding: 0.4pt 1.5pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #e0e0e0; font-weight: bold; }
+  b, strong { font-weight: bold; }
+  .katex { font-size: 6.5pt !important; }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1 (FRONT) ==================== -->
+<div class="page">
+<h1>NLP Midterm Cheat Sheet — CS2590 (Lectures 1–7) — Side A</h1>
+<div class="columns">
+
+<h2>L1: TEXT CLASSIFICATION</h2>
+
+<h3>NLP Challenges</h3>
+<p><b>Ambiguity:</b> syntactic ("I saw a man with a telescope") &amp; semantic (polysemy). <b>Situated understanding:</b> meaning depends on social/cultural context. <b>Data sparsity:</b> long tail of language, rare words, low-resource langs. <b>Bias:</b> models amplify biases from training data; lack common sense.</p>
+
+<h3>History</h3>
+<p><b>1940s–50s:</b> Shannon's info theory, per-word log-likelihood, Shannon Game. <b>1950s–80s:</b> Chomsky, rule-based ("Colorless green ideas sleep furiously" — grammaticality ≠ probability). <b>1990s:</b> statistical NLP, Penn Treebank, PCFGs. <b>2010s+:</b> deep learning, large-scale neural models.</p>
+
+<h3>Classification Setup</h3>
+<p>Input $x$ (text), output $y \in C$ (finite label set), classifier $f(x)=y$. <b>Binary</b> (2 classes) vs. <b>multiclass</b> (&gt;2). <b>Supervised learning:</b> train/dev/test splits. Dev for hyperparameter tuning, test for final eval. Sensitive to distribution shift.</p>
+
+<h3>Evaluation Metrics</h3>
+<div class="f">$$\text{Precision} = \frac{TP}{TP+FP} \quad \text{Recall} = \frac{TP}{TP+FN} \quad F_1 = \frac{2PR}{P+R}$$</div>
+<p><b>Accuracy</b> = correct/total — misleading w/ class imbalance (e.g., 99% non-spam → always predict non-spam = 99% acc but 0% recall on spam). F1 is harmonic mean of P and R.</p>
+
+<h3>Feature Representation</h3>
+<p><b>Bag-of-Words (BoW):</b> $\phi(x) \in \mathbb{R}^{|V|}$, each dim = word count or binary. Ignores word order &amp; semantic similarity. Longer docs have larger feature vectors → more influence on learning.</p>
+
+<h3>Logistic Regression</h3>
+<p><b>Binary (sigmoid):</b></p>
+<div class="f">$$P(y\!=\!1 \mid x,w) = \sigma(w \cdot \phi(x)) = \frac{1}{1+e^{-w \cdot \phi(x)}}$$</div>
+<p><b>Multiclass (softmax):</b></p>
+<div class="f">$$P(y \mid x,w) = \frac{e^{w_y \cdot \phi(x)}}{\sum_{y'} e^{w_{y'} \cdot \phi(x)}} \quad \hat{y} = \arg\max_y w_y \cdot \phi(x)$$</div>
+<p><b>Loss:</b> NLL (cross-entropy): $\mathcal{L}(w) = -\sum_i \log P(y_i \mid x_i,w)$. NLL is <b>convex</b> → local min = global min. <b>SGD:</b> $w \leftarrow w - \eta \nabla_w \mathcal{L}$. <b>L2 reg:</b> add $\lambda\|w\|^2$ → penalizes large weights → prevents overfitting.</p>
+
+<h3>Perceptron</h3>
+<p>Predict: $\hat{y} = \text{sign}(w \cdot \phi(x))$. <b>Update:</b> only on mistakes: $w \leftarrow w \pm \phi(x)$ (add for false neg, subtract for false pos). <b>Convergence:</b> guaranteed if linearly separable. Has mistake bound. <b>vs. LR:</b> no probabilistic output; updates only on errors; LR updates on every example.</p>
+
+<h3>Feedforward Neural Networks</h3>
+<div class="f">$$P(y \mid x) = \text{softmax}(W \cdot g(V \cdot \phi(x) + b_1) + b_2)$$</div>
+<p><b>Activations:</b> Sigmoid $\sigma(z)=\frac{1}{1+e^{-z}}$, Tanh, <b>ReLU</b> $\max(0,z)$. <b>Key:</b> FFNN w/o non-linearity = single linear transform = logistic regression. <b>XOR:</b> not linearly separable; NN with hidden layer solves it. <b>Backprop:</b> chain rule for efficient gradient computation through layers.</p>
+
+<h3>Regularization Techniques</h3>
+<p><b>L2 reg:</b> penalize large weights via $\lambda\|w\|^2$. <b>Dropout:</b> during training, randomly zero out neurons with probability $p$. Forces redundant reps, reduces co-adaptation. At test time, scale by $(1-p)$ or use inverted dropout.</p>
+
+<h2>L2: WORD EMBEDDINGS</h2>
+
+<h3>Motivation &amp; Distributional Semantics</h3>
+<p><b>One-hot:</b> $\mathbb{R}^{|V|}$, sparse, no similarity ($w_i^T w_j = 0$ for $i \neq j$). <b>Distributional hypothesis:</b> "know a word by the company it keeps" (Firth). Goal: dense, low-dim vectors $\mathbb{R}^d$ ($d \ll |V|$). <b>Brown clusters:</b> hierarchical agglomerative clustering by co-occurrence; hard clustering.</p>
+
+<h3>Word2Vec — CBOW &amp; Skip-Gram</h3>
+<p><b>CBOW:</b> predict center word from context. <b>Skip-gram:</b> predict context from center word.</p>
+<div class="f">$$P(c \mid w) = \frac{e^{v_c^T v_w}}{\sum_{c'} e^{v_{c'}^T v_w}}$$</div>
+<p><b>Two vector sets:</b> word embeddings $v_w$ and context embeddings $v_c$. Total params: $2 \times |V| \times d$.</p>
+
+<h3>Training Efficiency</h3>
+<p><b>Hierarchical softmax:</b> binary tree over vocab → $O(\log|V|)$ vs $O(|V|)$. <b>Negative sampling:</b> for each positive $(w,c)$, sample $k$ negative pairs. Binary classification:</p>
+<div class="f">$$\mathcal{L} = \log \sigma(v_c^T v_w) + \sum_{i=1}^{k} \log \sigma(-v_{c_i}^T v_w)$$</div>
+<p>Even if two words always co-occur, they may be sampled as negatives (depends on context window).</p>
+
+<h3>GloVe (Pennington 2014)</h3>
+<p>Global co-occurrence matrix $X$. Weighted least squares:</p>
+<div class="f">$$\mathcal{L} = \sum_{i,j} f(X_{ij})(w_i^T \tilde{w}_j + b_i + \tilde{b}_j - \log X_{ij})^2$$</div>
+<p>$f(x)$ caps very frequent pairs (e.g., $f(x) = \min((x/x_{\max})^\alpha, 1)$).</p>
+
+<h3>fastText (Bojanowski 2017)</h3>
+<p>Skip-gram on character n-grams. Word vec = sum of n-gram vecs. <b>Key:</b> generates embeddings for OOV words by composing known n-grams.</p>
+
+<h3>Evaluation &amp; Bias</h3>
+<p><b>Intrinsic:</b> word similarity (cosine sim), analogies ($\vec{king} - \vec{man} + \vec{woman} \approx \vec{queen}$). <b>Extrinsic:</b> downstream task performance. <b>Bias:</b> embeddings capture societal biases (man→doctor, woman→nurse). <b>TF-IDF:</b> sparse, high-dim; $\text{tf-idf}(t,d) = \text{tf}(t,d) \times \text{idf}(t)$.</p>
+
+<h3>DAN, ELMo, Contextualized Embeddings</h3>
+<p><b>DAN:</b> avg word embeddings → FFN → classify. Simple, loses order. <b>ELMo:</b> contextualized from bidirectional LSTM — same word gets different vectors in different contexts (polysemy). Embeddings = function of entire input sentence.</p>
+
+<h2>L3: SEQUENCE MODELING</h2>
+
+<h3>Sequence Labeling Tasks</h3>
+<p><b>POS tagging:</b> assign grammatical category (noun, verb, adj, etc.) to each word. Same word can have multiple tags by context ("back" = adj/noun/adv/verb). <b>NER:</b> identify &amp; classify named entities. <b>BIO scheme:</b> B-TYPE (beginning), I-TYPE (inside), O (outside).</p>
+
+<h3>Language Modeling</h3>
+<p>Assign probability to word sequences. Chain rule:</p>
+<div class="f">$$P(x_1,\ldots,x_n) = \prod_{i=1}^{n} P(x_i \mid x_1,\ldots,x_{i-1})$$</div>
+
+<h3>Noisy Channel Model</h3>
+<div class="f">$$\hat{x} = \arg\max_x P(x \mid a) = \arg\max_x \underbrace{P(a \mid x)}_{\text{channel}} \cdot \underbrace{P(x)}_{\text{LM}}$$</div>
+<p>Apps: ASR ($a$=audio, $x$=text), MT ($a$=source, $x$=target), grammar correction. $P(a \mid x)$ = acoustic/translation model, $P(x)$ = language model prior.</p>
+
+<h3>N-gram Language Models</h3>
+<p><b>Markov:</b> $P(x_i \mid x_1,\ldots,x_{i-1}) \approx P(x_i \mid x_{i-k+1},\ldots,x_{i-1})$. Estimate by counting n-gram occurrences. Memory $\propto V^N$ (exponential). <b>Add-one (Laplace) smoothing:</b> add 1 to all counts — overestimates rare events. <b>Perplexity:</b></p>
+<div class="f">$$\text{PP}(x) = 2^{-\frac{1}{N}\sum_{i=1}^{N} \log_2 P(x_i \mid x_{\lt i})}$$</div>
+<p>Lower = better. Only comparable between models with same vocabulary.</p>
+<p><b>Intuition:</b> perplexity = average branching factor: how many next-token choices the model is effectively unsure among. Lower = less surprised.</p>
+
+<h3>Neural Language Models</h3>
+<p><b>Feedforward neural LM:</b> concat embeddings of prev $n$ words → hidden layers → softmax over $|V|$. <b>Limits:</b> fixed context size; no weight sharing across positions. <b>DAN:</b> avg embeddings → FFN; loses word order entirely.</p>
+
+<h3>Recurrent Neural Networks (RNNs)</h3>
+<div class="f">$$h_t = g(Wh_{t-1} + Ux_t + b) \qquad y_t = \text{softmax}(Vh_t + b_o)$$</div>
+<p>$W,U,b$ <b>shared across all timesteps</b>. <b>Modes:</b> <b>Transducer</b> — output per step (POS, LM). <b>Acceptor</b> — single output from final $h_n$ (classification). <b>Limits:</b> (1) sequential, no parallelism; (2) vanishing/exploding gradients → hard to learn long-range deps.</p>
+
+<h3>LSTM (Long Short-Term Memory)</h3>
+<p>Uses gates (input $i_t$, forget $f_t$, output $o_t$) with sigmoid to control info flow. Cell state $c_t$ carries long-range info:</p>
+<div class="f">$$f_t = \sigma(W_f[h_{t-1},x_t]+b_f) \quad i_t = \sigma(W_i[h_{t-1},x_t]+b_i)$$
+$$o_t = \sigma(W_o[h_{t-1},x_t]+b_o) \quad \tilde{c}_t = \tanh(W_c[h_{t-1},x_t]+b_c)$$
+$$c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t \quad h_t = o_t \odot \tanh(c_t)$$</div>
+<p>Mitigates vanishing gradients. <b>Other solutions:</b> GRU (simpler gating), attention, gradient clipping, skip connections.</p>
+
+<h3>Seq2Seq Models</h3>
+<p><b>Encoder:</b> RNN → final hidden state = context vector $c$. <b>Decoder:</b> RNN initialized with $c$ → generates output tokens autoregressively. <b>Teacher forcing:</b> feed ground-truth prev token during training (stabilizes). <b>Scheduled sampling:</b> gradually transition from ground-truth to model's own predictions (bridges train-test gap).</p>
+<p><b>Exposure bias:</b> train sees gold previous tokens; test sees the model's own outputs, so mistakes can compound.</p>
+
+<h3>Attention Mechanism</h3>
+<p><b>Motivation:</b> fixed-size context vector is bottleneck for long sequences. Decoder attends to ALL encoder hidden states at each step.</p>
+<div class="f">$$e_{ij} = f(h_i^{\text{dec}}, h_j^{\text{enc}}) \quad \alpha_{ij} = \frac{e^{e_{ij}}}{\sum_k e^{e_{ik}}} \quad c_i = \sum_j \alpha_{ij} h_j^{\text{enc}}$$
+$$P(y_i) = \text{softmax}(W[c_i; h_i^{\text{dec}}])$$</div>
+<table>
+<tr><th>Score Function</th><th>Formula</th></tr>
+<tr><td>Additive (Bahdanau)</td><td>$v^T \tanh(W_1 h_i + W_2 h_j)$</td></tr>
+<tr><td>Dot-product (Luong)</td><td>$h_i^T h_j$</td></tr>
+<tr><td>Bilinear (Luong)</td><td>$h_i^T W h_j$</td></tr>
+</table>
+<p><b>Additive:</b> most expressive (learnable non-linear combination); slower. <b>Dot-product:</b> fastest, simplest; assumes q,k same dim. <b>Bilinear:</b> intermediate — adds a learned interaction matrix.</p>
+
+<h2>L3/L4: TRANSFORMER</h2>
+
+<h3>Advantages over RNNs</h3>
+<p>(1) <b>Parallelism:</b> all tokens processed simultaneously. (2) <b>O(1) path length</b> between any two positions (vs. O(n) for RNNs) → easier to learn long-range deps.</p>
+
+<h3>Self-Attention (Scaled Dot-Product)</h3>
+<div class="f">$$Q = XW^Q, \quad K = XW^K, \quad V = XW^V$$
+$$\text{Attn}(Q,K,V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right)\!V$$</div>
+<p><b>Intuition:</b> like a fuzzy hash table — each query matches every key to varying degrees, then retrieves a weighted blend of values. Lets every token look at every other token for context.</p>
+<p>Scaling by $\sqrt{d_k}$ prevents large dot products → softmax saturation → vanishingly small gradients. For large $d_k$, dot products grow $\propto d_k$ in variance.</p>
+
+<h3>Multi-Head Attention</h3>
+<div class="f">$$\text{MH}(Q,K,V) = \text{Concat}(\text{head}_1,\ldots,\text{head}_h)W^O$$
+$$\text{head}_i = \text{Attn}(QW_i^Q, KW_i^K, VW_i^V)$$</div>
+<p>Each head has <b>separate</b> $W_i^Q, W_i^K, W_i^V$ matrices. Allows attending to different representation subspaces. <b>Bug:</b> if same Q,K for all heads → identical attention maps → defeats purpose.</p>
+<p><b>Intuition:</b> each head tracks a different relationship type (e.g., subject, modifier, coreference). Splitting into heads avoids one softmax having to express a single dominant pattern.</p>
+
+<h3>Positional Embeddings</h3>
+<p>Transformer has no recurrence → no inherent sense of order. Add positional info to input embeddings:</p>
+<div class="f">$$PE_{(pos,2i)} = \sin\!\left(\frac{pos}{10000^{2i/d}}\right) \quad PE_{(pos,2i+1)} = \cos\!\left(\frac{pos}{10000^{2i/d}}\right)$$</div>
+<p><b>RoPE:</b> rotates Q,K vectors by position angle. Used in modern LLMs (LLaMA, etc.). More effective than additive positional embeddings for extrapolation.</p>
+<p><b>Sinusoidal:</b> fixed, deterministic, generalizes to unseen lengths in theory. <b>RoPE:</b> encodes <i>relative</i> position via Q,K rotation; extrapolates better than absolute embeddings; applied in each attention layer, not just input.</p>
+
+<h3>Encoder Layer</h3>
+<p>Self-Attn → Add &amp; LayerNorm → FFN → Add &amp; LayerNorm. FFN:</p>
+<div class="f">$$\text{FFN}(x) = \max(0, xW_1 + b_1)W_2 + b_2 \;\;\text{(two linear layers + ReLU)}$$</div>
+<p><b>Residual connections:</b> $\text{out} = \text{LayerNorm}(x + \text{Sublayer}(x))$. Helps gradient flow in deep networks. <b>LayerNorm:</b> normalizes to zero mean, unit variance per layer → stabilizes training.</p>
+
+<h3>Decoder Layer</h3>
+<p>Three sub-layers: (1) <b>Masked self-attention</b> — prevents attending to future positions (causal mask: set future entries to $-\infty$ before softmax). Ensures prediction at position $i$ depends only on positions $&lt; i$. (2) <b>Encoder-decoder attention</b> — Q from decoder, K and V from encoder output. (3) <b>FFN</b>. Each with residual + LayerNorm.</p>
+
+<h3>Decoder-Only Architecture (GPT-style)</h3>
+<p>Stack of masked self-attention layers only (no encoder). Autoregressive: generates one token at a time. Final layer: linear projection + softmax over vocabulary. Used by GPT-2/3, LLaMA.</p>
+
+<h3>Efficiency Concerns</h3>
+<p>Self-attn complexity: $O(n^2 \cdot d)$ where $n$ = seq length and $d$ = hidden/attention dimension (size of the Q/K/V vectors). <b>KV cache:</b> during inference, cache K,V for all past tokens → avoid recomputation.</p>
+<p><b>Grouped Query Attention (GQA):</b> groups multiple query heads to share the same key and value projections, cutting KV-cache size and attention computation while preserving multi-head expressiveness. <b>Multi-Head Latent Attention:</b> first projects inputs into a lower-dimensional latent space and performs attention there, then maps back, reducing memory and compute with minimal loss in modeling power.</p>
+
+</div>
+</div>
+
+<!-- ==================== PAGE 2 (BACK) ==================== -->
+<div class="page">
+<h1>NLP Midterm Cheat Sheet — CS2590 (Lectures 1–7) — Side B</h1>
+<div class="columns">
+
+<h2>L4/L5: TOKENIZATION &amp; DECODING</h2>
+
+<h3>Tokenization</h3>
+<p><b>Pre-tokenization:</b> regex-based splitting by spaces/punctuation (prevents cross-word merges like "ing to"). <b>BPE (Byte-Pair Encoding):</b> (1) Init vocab with all bytes/chars. (2) Count adjacent pair frequencies. (3) Merge most frequent pair → new token. (4) Repeat until desired vocab size. Open vocabulary: handles OOV via subword decomposition. Shares representations between related words ("love", "loving"). <b>Unigram LM tokenization:</b> start with large vocab, iteratively prune tokens with lowest likelihood impact. <b>Encoding:</b> text → token IDs. <b>Decoding:</b> token IDs → text.</p>
+<p><b>BPE vs Unigram:</b> BPE greedily builds vocabulary by merges; Unigram starts large, then deletes unlikely pieces. Constructive vs. pruning.</p>
+
+<h3>Decoding Strategies</h3>
+<p><b>Autoregressive generation:</b> generate one token at a time conditioned on all previous. Complexity: $O(k \cdot p \cdot L + k^2 \cdot L)$ for $p$ prompt tokens, $k$ generated tokens, $L$ layers.</p>
+<table>
+<tr><th>Method</th><th>How It Works</th><th>Pros/Cons</th></tr>
+<tr><td><b>Greedy</b></td><td>$\hat{x}_t = \arg\max_{x_t} P(x_t \mid x_{&lt;t})$</td><td>Fast; locally optimal ≠ globally optimal</td></tr>
+<tr><td><b>Beam</b></td><td>Keep top-$K$ hypotheses; expand &amp; prune at each step by cumulative log-prob</td><td>Better quality; can be repetitive/generic (degeneration)</td></tr>
+<tr><td><b>Sampling</b></td><td>Draw $x_t \sim P(x_t \mid x_{&lt;t})$</td><td>Diverse; may produce incoherent text</td></tr>
+<tr><td><b>Top-K</b></td><td>Sample from $K$ most probable tokens only</td><td>Balances quality and diversity</td></tr>
+<tr><td><b>Top-P (Nucleus)</b></td><td>Sample from smallest set with $\sum P \geq p$</td><td>Adaptive truncation; adjusts to distribution shape</td></tr>
+</table>
+<p><b>Temperature $T$:</b> $P'(x) \propto P(x)^{1/T}$. $T > 1$ → flatter (more random). $T &lt; 1$ → sharper (more deterministic). $T = 1$ → original distribution. $T \to 0$ → greedy. $T \to \infty$ → uniform.</p>
+<p><b>Top-K vs Top-P:</b> Top-K uses a fixed number of candidates; Top-P uses a variable set covering enough probability mass, so it adapts to sharp vs. flat distributions.</p>
+
+<h3>Degeneration</h3>
+<p>Beam search can yield repetitive, generic text because models are <b>locally normalized</b>: each next token can be likely while the full sequence is bad. Analogy: all-heads is the most likely coin-flip sequence, but atypical. Motivates sampling.</p>
+
+<h3>Advanced Decoding</h3>
+<p><b>Constrained decoding:</b> structural (valid JSON, grammar) or lexical (force/ban words). <b>Contrastive decoding:</b> score $= \log P_{\text{large}}(x) - \log P_{\text{small}}(x)$ → fluent and specific (amplifies what the large model knows that the small model does not). <b>DEXPERTS:</b> expert + anti-expert mixture for controlled generation (steers generation toward the expert's style and away from the anti-expert's). <b>Test-time scaling:</b> generate $N$ candidates → verifier scores → select best (max) or weighted vote. <b>Speculative decoding:</b> small draft model proposes $k$ tokens → large model verifies in one parallel pass (amortizes cost: one cheap sequential draft + one parallel verify pass). Speeds up inference without changing output distribution.</p>
+
+<h3>Hardware-Aware Optimizations</h3>
+<p><b>FlashAttention:</b> fuses attention computation, reduces HBM↔SRAM memory transfers. Exact attention (not approximate). <b>PagedAttention:</b> manages KV cache in non-contiguous memory pages (like OS virtual memory) → reduces memory waste.</p>
+<p><b>Intuition:</b> FlashAttention avoids materializing huge attention matrices in memory; PagedAttention stores KV cache in chunks so memory packs more efficiently.</p>
+
+<h2>L6: PRE-TRAINING</h2>
+
+<h3>LM Architecture Taxonomy</h3>
+<table>
+<tr><th>Type</th><th>Direction</th><th>Examples</th><th>Best For</th></tr>
+<tr><td>Encoder-only (MLM)</td><td>Bidirectional</td><td>BERT, RoBERTa, DeBERTa</td><td>Classification, NER, QA</td></tr>
+<tr><td>Decoder-only (Causal LM)</td><td>Left-to-right</td><td>GPT-2/3/4, LLaMA</td><td>Generation</td></tr>
+<tr><td>Encoder-Decoder</td><td>Both</td><td>T5, BART, MASS</td><td>Translation, summarization</td></tr>
+<tr><td>Prefixed-LM</td><td>Both</td><td>T5</td><td>Prediction but with additional context</td></tr>
+</table>
+<p><b>Intuition:</b> encoder-only = understand, decoder-only = generate, encoder-decoder = read then write.</p>
+
+<h3>BERT</h3>
+<p>Encoder-only. <b>Base:</b> 12 layers, 768 hidden, 12 heads, 110M. <b>Large:</b> 24 layers, 1024 hidden, 16 heads, 340M. <b>Training objectives:</b> (1) <b>MLM:</b> mask 15% of tokens (80% [MASK], 10% random, 10% unchanged) → predict original. (2) <b>NSP:</b> given sentence A and B, predict if B is the actual next sentence. <b>Usage:</b> [CLS] token for sentence-level classification; token outputs for NER; predict start/end positions for extractive QA. the input is (token embed + position + segment)</p>
+
+<h3>BERT Extensions</h3>
+<p><b>RoBERTa:</b> more data, longer training, dynamic masking (re-mask each epoch), removes NSP, larger batches. <b>DeBERTa:</b> disentangled attention (separate content and position), enhanced mask decoder.</p>
+
+<h3>Encoder-Decoder Models</h3>
+<p><b>T5:</b> text-to-text: every task is input string → output string; task prefix specifies what to do. Trained on C4 (Colossal Cleaned Common Crawl) with span corruption denoising. <b>BART:</b> denoising autoencoder — corrupt text (mask, delete, permute, rotate) → reconstruct. <b>MASS:</b> mask contiguous span in encoder → predict in decoder.</p>
+
+<h3>Paradigms for Using LMs</h3>
+<p><b>Pre-train + Fine-tune:</b> pre-train on massive unlabeled corpus → fine-tune on task-specific labeled data. <b>ELMo:</b> contextualized embeddings from biLSTM (feature-based, not fine-tuned). <b>Prompting / In-context Learning (ICL):</b> frozen model + prompt with instructions ± few-shot examples. <b>Instruction tuning:</b> fine-tune on diverse tasks formatted as instructions. ICL is sensitive to (1) example choice, (2) ordering, (3) format/template. LLaMA 2: SFT on smaller high-quality data. Issues: data quality, hallucinations, lack of creativity.</p>
+
+<h3>Building LMs — Key Stages</h3>
+<p>(1) Tokenizer building (BPE). (2) Pre-training (next-token prediction). (3) Instruction tuning (SFT). (4) RLHF alignment. <b>Training data principles:</b> scale + quality + diversity. Curation: dedup, safety filter, cleaning, heuristic filtering. Synthetic data increasingly used. Notable datasets: The Pile (825 GB), FineWeb (108 TB), Dolma (3T tokens).</p>
+
+<h3>Parameter-Efficient Fine-Tuning (PEFT)</h3>
+<p><b>BitFit:</b> fine-tune only bias terms (tiny fraction of params). <b>Adapters:</b> insert small FFN layers into each transformer layer; train only adapters. <b>LoRA (Low-Rank Adaptation):</b></p>
+<div class="f">$$W' = W + \Delta W = W + BA \;\;\text{where}\;\; B \in \mathbb{R}^{d \times r}, A \in \mathbb{R}^{r \times d}, \; r \ll d$$</div>
+<p>Only $B$ and $A$ are trained. Drastically reduces trainable parameters (e.g., $r = 8$ vs. $d = 4096$).</p>
+<p><b>Intuition:</b> freeze the big matrix and learn only a small low-rank correction, so adaptation is cheap; works especially well for small fine-tuning datasets and gives most benefit when applied to MLP layers (applying LoRA to attention weights adds little beyond this).</p>
+
+<h2>L7: POST-TRAINING &amp; RLHF</h2>
+
+<h3>Goals of Post-Training</h3>
+<p>Align model to human preferences (helpful, harmless, honest). Distill reasoning ability. Extend context length. Post-training turns a base LM into a useful assistant.</p>
+
+<h3>RL Basics &amp; LLM Mapping</h3>
+<p><b>MDP:</b> $(S, A, T, R, \pi)$. Policy $\pi_\theta(a \mid s)$ maps states to action distributions. Objective: maximize $\mathbb{E}[\sum_t \gamma^t r_t]$. <b>LLM mapping:</b> state = tokens so far; action = next token; $T(s,a) = [s;a]$; policy = LM $p_\theta(x_t \mid x_{&lt;t})$; trajectory = full generation $x_1,\ldots,x_T$.</p>
+
+<h3>REINFORCE (Policy Gradient)</h3>
+<p>Gradient via log-derivative trick: $\nabla_\theta J = \mathbb{E}_\tau[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau)]$. Monte Carlo: sample $N$ trajectories, estimate gradient, update. <b>For LLMs:</b> sample $N$ generations, score each, weight each token log-prob gradient by total reward. <b>Issues:</b> high variance, hard credit assignment, sparse/delayed reward.</p>
+
+<h3>RLHF Pipeline</h3>
+<p><b>Step 1 — Preference data:</b> for each prompt, generate two outputs; human picks preferred one → dataset of $(x, y_w, y_l)$ triplets. Pairwise comparison more reliable than absolute ratings.</p>
+<p><b>Step 2 — Reward model:</b> predict scalar preference score. Uses <b>Bradley-Terry model:</b></p>
+<div class="f">$$P(y_w \succ y_l) = \sigma\big(r_\theta(y_w) - r_\theta(y_l)\big) \quad \mathcal{L} = -\log \sigma\big(r_\theta(y_w) - r_\theta(y_l)\big)$$</div>
+<p>Binary ranking loss maximizes margin between winning and losing scores.</p>
+<p><b>Why pairwise?</b> Humans are noisy at absolute 1-10 scoring but much more consistent at comparisons. Bradley-Terry turns pairwise preferences into a scalar reward model.</p>
+<p><b>Intuition:</b> reward model learns a hidden better-than scale from pairwise wins/losses instead of unreliable absolute scores.</p>
+<p><b>Step 3a — PPO:</b> actor-critic method. Value function $V_\phi(s)$ estimates expected return from state $s$. <b>Advantage</b> $A_t = R_t - V_\phi(s_t)$ measures how much better the action was than expected, reducing variance. KL penalty $\beta \cdot D_{KL}(\pi_\theta \| \pi_{\text{ref}})$ keeps policy near the SFT reference. Requires <b>4 models in memory:</b> policy $\pi_\theta$, value $V_\phi$, reward model $r$, reference $\pi_{\text{ref}}$. <b>On-policy:</b> needs fresh samples each iteration.</p>
+<p><b>KL intuition:</b> a rubber band to the SFT model: improve reward, but do not drift too far.</p>
+<p><b>Step 3b — DPO (Direct Preference Optimization):</b> keep the same preference pairs, but optimize a direct loss instead of training a separate reward model:</p>
+<div class="f">$$\mathcal{L}_{\text{DPO}} = -\log \sigma\!\left(\beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}\right)$$</div>
+<p><b>Key insight:</b> derive the optimal policy in closed form from the reward model, then plug it straight into the preference loss. This implicitly defines $r(x,y) = \beta \log \frac{\pi_\theta(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$. <b>Off-policy:</b> trains on a fixed preference dataset. Simpler than PPO but can be less stable on hard tasks.</p>
+
+<h3>Post-Training Algorithm Comparison</h3>
+<table>
+<tr><th>Property</th><th>REINFORCE</th><th>PPO</th><th>DPO</th></tr>
+<tr><td>Reward model</td><td>Required (ext.)</td><td>Required (ext.)</td><td>Implicit (no RM)</td></tr>
+<tr><td># models in memory</td><td>2 (policy+RM)</td><td>4 (policy,value,RM,ref)</td><td>2 (policy+ref)</td></tr>
+<tr><td>On/Off-policy</td><td>On-policy</td><td>On-policy</td><td>Off-policy</td></tr>
+<tr><td>Variance</td><td>High</td><td>Lower (adv.)</td><td>Low (sup.-style)</td></tr>
+<tr><td>Complexity</td><td>Simple</td><td>Complex (4 models)</td><td>Simple (1 loss)</td></tr>
+<tr><td>Stability</td><td>Unstable</td><td>More stable (KL)</td><td>Stable; may plateau</td></tr>
+<tr><td>Sample efficiency</td><td>Low</td><td>Moderate</td><td>High (fixed data)</td></tr>
+</table>
+
+<h3>Alignment Issues</h3>
+<p><b>Reward hacking:</b> exploit reward metric (e.g., longer responses get higher reward). <b>Sycophancy:</b> agrees with user even when user is wrong. <b>Sandbagging:</b> worse answers for "less educated" users. <b>Annotator disagreement:</b> noisy, inconsistent feedback due to varying expertise/backgrounds.</p>
+<p><b>RL with Verifiers:</b> for checkable tasks (math, code), use a verifier instead of a learned reward model to reduce reward hacking. Generate $N$ candidates → verifier scores → pick best. Common in modern post-training pipelines.</p>
+
+<h2>KEY FORMULA REFERENCE</h2>
+<table>
+<tr><th>Name</th><th>Formula</th></tr>
+<tr><td>Softmax</td><td>$P(y) = e^{z_y} / \sum_{y'} e^{z_{y'}}$</td></tr>
+<tr><td>Sigmoid</td><td>$\sigma(z) = 1/(1+e^{-z})$</td></tr>
+<tr><td>NLL Loss</td><td>$\mathcal{L} = -\sum_i \log P(y_i \mid x_i)$</td></tr>
+<tr><td>REINFORCE</td><td>$\nabla J = \mathbb{E}[\sum_t \nabla \log \pi_\theta(a_t \mid s_t) \cdot R(\tau)]$</td></tr>
+<tr><td>Attn Weights</td><td>$\alpha_{ij} = \frac{e^{e_{ij}}}{\sum_k e^{e_{ik}}}$</td></tr>
+<tr><td>Scaled Dot-Prod Attn</td><td>$\text{softmax}(QK^T\!/\sqrt{d_k}) \cdot V$</td></tr>
+<tr><td>PPO Advantage</td><td>$A_t = R_t - V_\phi(s_t)$</td></tr>
+<tr><td>PPO KL Penalty</td><td>$\beta \, D_{KL}(\pi_\theta \| \pi_{\text{ref}})$</td></tr>
+<tr><td>Chain Rule (LM)</td><td>$P(x) = \prod_i P(x_i \mid x_{&lt;i})$</td></tr>
+<tr><td>Perplexity</td><td>$\text{PP} = 2^{-\frac{1}{N}\sum \log_2 P(x_i)}$</td></tr>
+<tr><td>Temperature</td><td>$P'(x) \propto P(x)^{1/T}$</td></tr>
+<tr><td>Noisy Channel</td><td>$\arg\max_x P(a \mid x) \cdot P(x)$</td></tr>
+<tr><td>RNN Transition</td><td>$h_t = g(Wh_{t-1} + Ux_t + b)$</td></tr>
+<tr><td>Bradley-Terry</td><td>$P(w \succ l) = \sigma(r(w) - r(l))$</td></tr>
+<tr><td>LoRA</td><td>$W' = W + BA$</td></tr>
+<tr><td>FFN</td><td>$\max(0, xW_1\!+\!b_1)W_2\!+\!b_2$</td></tr>
+<tr><td>Skip-gram NS</td><td>$\log\sigma(v_c^Tv_w)+\sum\log\sigma(-v_{c_i}^Tv_w)$</td></tr>
+<tr><td>GloVe</td><td>$\sum f(X_{ij})(w_i^T\tilde{w}_j+b_i+\tilde{b}_j-\log X_{ij})^2$</td></tr>
+<tr><td>LSTM Forget Gate</td><td>$f_t = \sigma(W_f[h_{t-1},x_t]+b_f)$</td></tr>
+<tr><td>DPO Loss</td><td>$-\log\sigma(\beta\log\frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta\log\frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)})$</td></tr>
+</table>
+
+<h2>ARCHITECTURE COMPARISON</h2>
+<table>
+<tr><th>Model</th><th>Var. Len?</th><th>Parallel?</th><th>Params Shared?</th><th>Long-Range?</th><th>Limitation</th></tr>
+<tr><td>FFN</td><td>No</td><td>Yes</td><td>No</td><td>No</td><td>Fixed input</td></tr>
+<tr><td>RNN</td><td>Yes</td><td>No</td><td>Yes (time)</td><td>Weak</td><td>Vanishing grad</td></tr>
+<tr><td>LSTM/GRU</td><td>Yes</td><td>No</td><td>Yes</td><td>Better</td><td>Still sequential</td></tr>
+<tr><td>Transformer</td><td>Yes</td><td>Yes</td><td>Yes (pos.)</td><td>Strong O(1)</td><td>$O(n^2)$ attn</td></tr>
+</table>
+
+<h2>KEY DISTINCTIONS</h2>
+<p><b>Encoder-only</b> (BERT: bidirectional, classification) vs. <b>Decoder-only</b> (GPT: autoregressive, generation) vs. <b>Enc-Dec</b> (T5: both). <b>Static embeddings</b> (Word2Vec, GloVe: one vec per word) vs. <b>Contextualized</b> (ELMo, BERT: context-dependent). <b>Teacher forcing</b> (use ground truth) vs. <b>Scheduled sampling</b> (gradual transition). <b>PPO</b> (4 models, on-policy, advantage-based, complex, more stable for hard tasks) vs. <b>DPO</b> (2 models, off-policy, direct preference loss, simpler, may plateau). <b>REINFORCE</b> (basic policy gradient, high variance, simple) vs. <b>PPO</b> (adds value baseline + KL constraint) vs. <b>DPO</b> (bypasses RM entirely). <b>Greedy</b> (fast, suboptimal) vs. <b>Beam</b> (better, repetitive) vs. <b>Sampling</b> (diverse, risky). <b>Intrinsic</b> (similarity/analogy) vs. <b>Extrinsic</b> (downstream performance) evaluation.</p>
+
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>
