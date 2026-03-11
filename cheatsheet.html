@@ -251,8 +251,8 @@ $$\text{head}_i = \text{Attn}(QW_i^Q, KW_i^K, VW_i^V)$$</div>
 <h3>Decoder-Only Architecture (GPT-style)</h3>
 <p>Stack of masked self-attention layers only (no encoder). Autoregressive: generates one token at a time. Final layer: linear projection + softmax over vocabulary. Used by GPT-2/3, LLaMA.</p>
 
-<h3>Efficiency Concerns</h3>
-<p>Self-attn complexity: $O(n^2 \cdot d)$ where $n$ = seq length. <b>KV cache:</b> during inference, cache K,V for all past tokens → avoid recomputation. <b>Grouped Query Attention (GQA):</b> multiple query heads share same K,V → fewer params and less memory. <b>Intuition:</b> reduces KV-cache memory by sharing K,V across head groups. <b>Multi-Head Latent Attention:</b> map input to smaller latent vectors before computing attention. <b>Intuition:</b> compresses input to a bottleneck first, reducing memory.</p>
+<h3>Efficiency Concerns / Modifications to Attention</h3>
+<p>Self-attn complexity: $O(n^2 \cdot d)$ where $n$ = seq length.  where $d$ = dimension length. <b>KV cache:</b> during inference, cache K,V for all past tokens → avoid recomputation. <b>Grouped Query Attention (GQA):</b> share K,V caches across attention heads; each group of query heads shares one K,V (intermediate between multi-head and multi-query). <b>Multi-Head Latent Attention:</b> map input to smaller latent vectors $c_t^Q$, $c_t^{KV}$ before mapping to K,V,Q; compresses to bottleneck first → less memory.</p>
 
 </div>
 </div>
@@ -312,13 +312,14 @@ $$\text{head}_i = \text{Attn}(QW_i^Q, KW_i^K, VW_i^V)$$</div>
 <p><b>T5:</b> text-to-text: every task is input string → output string; task prefix specifies what to do. Trained on C4 (Colossal Cleaned Common Crawl) with span corruption denoising. <b>BART:</b> denoising autoencoder — corrupt text (mask, delete, permute, rotate) → reconstruct. <b>MASS:</b> mask contiguous span in encoder → predict in decoder.</p>
 
 <h3>Paradigms for Using LMs</h3>
-<p><b>Pre-train + Fine-tune:</b> pre-train on massive unlabeled corpus → fine-tune on task-specific labeled data. <b>ELMo:</b> contextualized embeddings from biLSTM (feature-based, not fine-tuned). <b>Prompting / In-context Learning (ICL):</b> frozen model + prompt with instructions ± few-shot examples. <b>Instruction tuning:</b> fine-tune on diverse tasks formatted as instructions. ICL is sensitive to (1) example choice, (2) ordering, (3) format/template. LLaMA 2: SFT on smaller high-quality data. Issues: data quality, hallucinations, lack of creativity.</p>
+<p><b>Pre-train + Fine-tune:</b> pre-train on massive unlabeled corpus → fine-tune on task-specific labeled data. <b>ELMo:</b> contextualized embeddings from biLSTM (feature-based, not fine-tuned). <b>Prompting / In-context Learning (ICL):</b> frozen model + prompt with instructions ± few-shot examples. <b>Prompt Learning:</b> template $f_{\text{template}}: x \to x'$ with slot [Z]; $\hat{z} = \arg\max_z P(f_{\text{fill}}(x',z); M_\theta)$ (e.g. sentiment: "[X]. Overall, it was a [Z] movie"). <b>Instruction tuning:</b> fine-tune on diverse tasks formatted as instructions. ICL is sensitive to (1) example choice, (2) ordering, (3) format/template. LLaMA 2: SFT on smaller high-quality data. Issues: data quality, hallucinations, lack of creativity.</p>
 
 <h3>Building LMs — Key Stages</h3>
 <p>(1) Tokenizer building (BPE). (2) Pre-training (next-token prediction). (3) Instruction tuning (SFT). (4) RLHF alignment. <b>Training data principles:</b> scale + quality + diversity. Curation: dedup, safety filter, cleaning, heuristic filtering. Synthetic data increasingly used. Notable datasets: The Pile (825 GB), FineWeb (108 TB), Dolma (3T tokens).</p>
 
 <h3>Parameter-Efficient Fine-Tuning (PEFT)</h3>
-<p><b>BitFit:</b> fine-tune only bias terms (tiny fraction of params). <b>Adapters:</b> insert small FFN layers into each transformer layer; train only adapters. <b>LoRA (Low-Rank Adaptation):</b></p>
+<p><b>Prefix tuning:</b> learnable continuous prefix vectors are injected at <b>every transformer layer</b>, while <b>prompt tuning</b> adds soft prompt tokens only at the <b>input layer</b>.
+<b>BitFit:</b> fine-tune only bias terms (tiny fraction of params). <b>Adapters:</b> insert small FFN layers into each transformer layer; train only adapters. <b>LoRA (Low-Rank Adaptation):</b> </p>
 <div class="f">$$W' = W + \Delta W = W + BA \;\;\text{where}\;\; B \in \mathbb{R}^{d \times r}, A \in \mathbb{R}^{r \times d}, \; r \ll d$$</div>
 <p>Only $B$ and $A$ are trained. Drastically reduces trainable parameters (e.g., $r = 8$ vs. $d = 4096$).</p>
 <p><b>Intuition:</b> freeze the big matrix and learn only a small low-rank correction, so adaptation is cheap.</p>
